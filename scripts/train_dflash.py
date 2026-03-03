@@ -689,9 +689,13 @@ def main():
             "enabling VLM mode automatically."
         )
     if is_vlm and args.target_model_backend != "hf":
-        raise ValueError(
-            "Real multimodal DFlash training currently supports only HF backend. "
-            "Please set --target-model-backend hf."
+        if not args.text_only:
+            raise ValueError(
+                "Real multimodal DFlash training (with images) supports only HF backend. "
+                "Use --target-model-backend hf, or add --text-only for SGLang backend."
+            )
+        print_on_rank0(
+            "text-only mode with SGLang backend: using SGLang target model (supports TP)"
         )
     is_vlm_data = is_vlm and not args.text_only
     if args.text_only:

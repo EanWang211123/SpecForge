@@ -70,7 +70,6 @@ def initialize_model_parallel(
     pipeline_model_parallel_size: int = 1,
     backend: Optional[str] = None,
     duplicate_tp_group: bool = False,
-    torch_compile: Optional[bool] = None,
 ) -> None:
     """
     Initialize model parallel groups.
@@ -130,7 +129,6 @@ def initialize_model_parallel(
         ),
         group_name="tp",
         pynccl_use_current_stream=duplicate_tp_group,
-        torch_compile=torch_compile,
     )
 
     if duplicate_tp_group:
@@ -149,7 +147,6 @@ def initialize_model_parallel(
             ),
             group_name="pdmux_prefill_tp",
             pynccl_use_current_stream=True,
-            torch_compile=torch_compile,
         )
         parallel_state._TP.pynccl_comm.disabled = False
         parallel_state._PDMUX_PREFILL_TP_GROUP.pynccl_comm.disabled = False
@@ -218,6 +215,12 @@ def initialize_model_parallel(
         use_custom_allreduce=False,
         group_name="pp",
     )
+
+    # For simple TP (no attention DP/CP, no MoE DP), ATTN_TP, ATTN_CP, MOE_DP equal TP.
+    # SGLang's model_runner expects these to be initialized.
+    parallel_state._ATTN_CP = parallel_state._TP
+    parallel_state._ATTN_TP = parallel_state._TP
+    parallel_state._MOE_DP = parallel_state._TP
 
 
 def initialize_dp_attention(
