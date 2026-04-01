@@ -611,7 +611,7 @@ def main():
             print(f"Loading draft config from checkpoint: {checkpoint_config_path}")
             args.draft_config_path = checkpoint_config_path
 
-        target_config = AutoConfig.from_pretrained(
+    target_config = AutoConfig.from_pretrained(
         args.target_model_path, trust_remote_code=args.trust_remote_code
     )
     detected_vlm = getattr(target_config, "model_type", None) in VLM_MODEL_TYPES
